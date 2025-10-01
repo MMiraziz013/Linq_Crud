@@ -1,0 +1,6 @@
+@Linq_Crud_HostAddress = http://localhost:5020
+
+GET {{Linq_Crud_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
