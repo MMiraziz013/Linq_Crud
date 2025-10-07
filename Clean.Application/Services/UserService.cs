@@ -1,23 +1,29 @@
 using Clean.Application.Abstractions;
 using Clean.Application.Dtos.User;
+using Clean.Application.Services.Jwt;
 using Clean.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace Clean.Application.Services;
 
 public class UserService : IUserService
 {
     private readonly IUserRepository _repository;
+    private readonly IJwtTokenService _tokenService;
 
-    public UserService(IUserRepository repository)
+    public UserService(IUserRepository repository, IJwtTokenService tokenService)
     {
         _repository = repository;
+        _tokenService = tokenService;
     }
-    public async Task<Response<bool>> AddUserAsync(AddUserDto dto)
+    public async Task<Response<bool>> RegisterUserAsync(AddUserDto dto)
     {
+        var hasher = new PasswordHasher<object>();
         var user = new User
         {
             Name = dto.Name,
-            Email = dto.Email
+            Email = dto.Email,
+            HashedPassword = hasher.HashPassword(null, dto.Password)
         };
         var isAdded = await _repository.AddUserAsync(user);
         return new Response<bool> (isAdded);
@@ -120,4 +126,22 @@ public class UserService : IUserService
         var list = await _repository.GetUserWithOverdueTasks();
         return new Response<List<GetUserWithTasksDto>>(list);
     }
+
+    public async Task<Response<string>> LoginAsync(UserLoginDto login)
+    {
+        var userFound = await _repository.GetUserByNameAsync(login.Name);
+        if (userFound == null)
+        {
+            throw new ArgumentException("No user with the given credentials");
+        }
+        
+        var passwordHasher = new PasswordHasher<object>();
+        var verifiedPassword = passwordHasher.VerifyHashedPassword(null, userFound.HashedPassword,login.Password);
+        if (verifiedPassword == PasswordVerificationResult.Failed)
+            throw new UnauthorizedAccessException("Invalid login or pass");
+
+        return new Response<string>(_tokenService.CreateAccessToken(userFound.Id, userFound.Name, "admin"));
+    }
 }
+
+//TODO: Implement User Authorizing Services

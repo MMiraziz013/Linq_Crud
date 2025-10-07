@@ -1,24 +1,41 @@
 using Clean.Application.Abstractions;
 using Clean.Application.Dtos.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Linq_Crud.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("[controller]")]
+[Authorize]
 public class UserController : Controller
 {
     private readonly IUserService _service;
+    private readonly IConfiguration _configuration;
 
-    public UserController(IUserService service)
+
+    //TODO: Implement User Authorizing controller endpoints
+    
+    public UserController(IUserService service, IConfiguration configuration)
     {
         _service = service;
+        _configuration = configuration;
     }
 
-    [HttpPost("add-user")]
-    public async Task<IActionResult> AddUserAsync(AddUserDto dto)
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UserRegistrationAsync([FromBody]AddUserDto dto)
     {
-        var response = await _service.AddUserAsync(dto);
+        var response = await _service.RegisterUserAsync(dto);
+        return Ok(response);
+    }
+
+    [HttpPost("login")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UserLoginAsync([FromBody] UserLoginDto dto)
+    {
+        var response = await _service.LoginAsync(dto);
         return Ok(response);
     }
 

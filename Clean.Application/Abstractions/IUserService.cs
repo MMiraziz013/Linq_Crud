@@ -5,7 +5,7 @@ namespace Clean.Application.Abstractions;
 
 public interface IUserService
 {
-    public Task<Response<bool>> AddUserAsync(AddUserDto dto);
+    public Task<Response<bool>> RegisterUserAsync(AddUserDto dto);
     public Task<Response<List<GetUserDto>>> GetUsersAsync();
     public Task<Response<GetUserDto>>? GetUserByIdAsync(int id);
     public Task<Response<bool>> UpdateUserAsync(UpdateUserDto dto);
@@ -19,4 +19,7 @@ public interface IUserService
     public Task<Response<List<GetUserWithTasksDto>>> GetNewUsersWithTasks();
 
     public Task<Response<List<GetUserWithTasksDto>>> GetUserWithOverdueTasks();
+
+    Task<Response<string>> LoginAsync(UserLoginDto login);
+
 }

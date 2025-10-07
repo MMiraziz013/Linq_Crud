@@ -40,6 +40,19 @@ public class UserRepository : IUserRepository
         throw new ArgumentException($"No user with id: {id}");
     }
 
+    public async Task<User>? GetUserByNameAsync(string name)
+    {
+        var user = await _context.Users
+            .Where(u => u.Name.ToLower() == name.ToLower()).FirstOrDefaultAsync();
+
+        if (user is null)
+        {
+            throw new ArgumentException("No user with such credentials");
+        }
+
+        return user;
+    }
+
     public async Task<bool> UpdateUserAsync(User dto)
     {
         var toUpdate = await _context.Users.FindAsync(dto.Id);
